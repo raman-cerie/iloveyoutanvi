@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iloveyoutanvi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #FFD1DC;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.2rem; color: #E75480; margin: 20px 0 8px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        .sub { color: #888; font-size: 1rem; margin-bottom: 20px; }
+        button {
+            background: #E75480; color: white; border: none;
+            padding: 14px 36px; border-radius: 100px; font-size: 1.1rem;
+            cursor: pointer; transition: all 0.3s; margin-bottom: 24px;
+        }
+        button:hover { background: #D43D6A; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(231,84,128,0.4); }
+        button:active { transform: translateY(0); }
+        .maps {
+            display: none; gap: 16px; align-items: center;
+            flex-wrap: wrap; justify-content: center; width: 100%;
+            max-width: 900px;
+        }
+        .maps.show { display: flex; }
+        .map-box {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 6px 24px rgba(231,84,128,0.25);
+            width: 380px; max-width: 100%;
+        }
+        .map-box .label {
+            text-align: center; padding: 10px; font-size: 0.9rem;
+            color: #E75480; font-weight: 600;
+        }
+        .map-box .m { height: 260px; width: 100%; }
+        .arrow {
+            font-size: 2rem; color: #E75480;
+            animation: bounce 1s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(8px); }
+        }
+        .status { color: #E75480; font-size: 0.9rem; margin-top: 8px; display: none; }
+        .status.show { display: block; }
+    </style>
+</head>
+<body>
+    <h1>I love you 💕</h1>
+    <p class="sub">Can you share your location?</p>
+    <button onclick="showMaps()">Yes, here it is 💌</button>
+    <p class="status" id="status"></p>
+    <div class="maps" id="maps">
+        <div class="map-box">
+            <div class="label">💗 You</div>
+            <div class="m" id="youMap"></div>
+        </div>
+        <div class="arrow">💫</div>
+        <div class="map-box">
+            <div class="label">💖 Tanvi</div>
+            <div class="m" id="tanviMap"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Tanvi's location (Shiv's location — placeholder, update as needed)
+        const TANVI = { lat: 28.6139, lng: 77.2090, label: "Tanvi 💖" }; // Delhi
+
+        let youMap, tanviMap, userPos;
+
+        function initMaps() {
+            if (youMap) return;
+            youMap = L.map('youMap', { zoomControl: false, attributionControl: false })
+                .setView([20, 0], 2);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: ''
+            }).addTo(youMap);
+
+            tanviMap = L.map('tanviMap', { zoomControl: false, attributionControl: false })
+                .setView([TANVI.lat, TANVI.lng], 5);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: ''
+            }).addTo(tanviMap);
+
+            // Tanvi marker
+            const heartIcon = L.divIcon({
+                html: '💖', className: 'heart-icon',
+                iconSize: [32, 32], iconAnchor: [16, 16]
+            });
+            L.marker([TANVI.lat, TANVI.lng], { icon: heartIcon })
+                .addTo(tanviMap)
+                .bindPopup(TANVI.label);
+        }
+
+        function showMaps() {
+            document.getElementById('maps').classList.add('show');
+            initMaps();
+
+            if (!navigator.geolocation) {
+                document.getElementById('status').textContent = "Location not supported on this device 💔";
+                document.getElementById('status').classList.add('show');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    userPos = { lat: latitude, lng: longitude };
+                    document.getElementById('status').textContent = 
+                        `You're connected! 💞`;
+                    document.getElementById('status').classList.add('show');
+
+                    // User marker
+                    const youIcon = L.divIcon({
+                        html: '💗', className: 'heart-icon',
+                        iconSize: [32, 32], iconAnchor: [16, 16]
+                    });
+                    L.marker([latitude, longitude], { icon: youIcon })
+                        .addTo(youMap)
+                        .bindPopup('You are here 💗');
+
+                    // Center on user
+                    youMap.setView([latitude, longitude], 14);
+
+                    // Tanvi map also shows user as a second dot
+                    const smallYou = L.divIcon({
+                        html: '📍', className: 'heart-icon',
+                        iconSize: [24, 24], iconAnchor: [12, 12]
+                    });
+                    L.marker([latitude, longitude], { icon: smallYou })
+                        .addTo(tanviMap)
+                        .bindPopup('You 💗');
+
+                    // Draw polyline on tanvi map
+                    L.polyline([[latitude, longitude], [TANVI.lat, TANVI.lng]], {
+                        color: '#E75480', weight: 2, dashArray: '8 6',
+                        opacity: 0.7
+                    }).addTo(tanviMap);
+
+                    // Fit both markers on tanvi map
+                    const bounds = L.latLngBounds(
+                        [latitude, longitude],
+                        [TANVI.lat, TANVI.lng]
+                    );
+                    tanviMap.fitBounds(bounds, { padding: [30, 30] });
+
+                    // Also show on youMap a small marker for Tanvi
+                    const smallTanvi = L.divIcon({
+                        html: '💖', className: 'heart-icon',
+                        iconSize: [20, 20], iconAnchor: [10, 10]
+                    });
+                    L.marker([TANVI.lat, TANVI.lng], { icon: smallTanvi })
+                        .addTo(youMap)
+                        .bindPopup('Tanvi 💖');
+                    
+                    // Fit both on youMap
+                    const bounds2 = L.latLngBounds(
+                        [latitude, longitude],
+                        [TANVI.lat, TANVI.lng]
+                    );
+                    youMap.fitBounds(bounds2, { padding: [30, 30] });
+                },
+                (err) => {
+                    document.getElementById('status').textContent = 
+                        "That's okay — I still love you 💗";
+                    document.getElementById('status').classList.add('show');
+                }
+            );
+        }
+    </script>
+</body>
+</html>
