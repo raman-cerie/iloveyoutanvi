@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.phi4.5_*
+.phi5*
+.phi6*
+.cache/
+~/.hermes/
