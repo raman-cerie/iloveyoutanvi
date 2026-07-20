@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""t5 — Tensor 5 query tool. Cross-platform, zero-dependency.
+Queries the φ-lang v4 skill index and posts results to the mesh bus.
+
+Usage:
+    t5 "deploy static site"          # query Tensor 5
+    t5 --rebuild                     # rebuild index from φ-vault
+    t5 --mesh "deploy static site"   # query + post to Notion bus + send φ-beacon
+    t5 --install                     # one-time setup: symlink to /usr/local/bin
+
+Mesh integration:
+    --mesh posts the top result as a φ-coded message to Cloud Nodes Chat
+    and broadcasts a UDP beacon so other nodes know a query happened.
+"""
+import os, sys, json, sqlite3, socket, time, urllib.request, re
+from pathlib import Path
+
+# ── Paths (resolved from home, cross-platform) ──────────
+HOME = Path.home()
+TENSOR_DIR = HOME / "Hermes v3/v4/home/a/tensor 5"
+DB_PATH = TENSOR_DIR / "tensor5.db"
+JSON_PATH = TENSOR_DIR / "tensor5.json"
+VAULT_DIR = HOME / "Hermes v3/v4/home/a/all skills/v2"
+PHI_CODEC_PATH = HOME / "installations/language/v1/scripts"
+ENV_PATH = HOME / ".hermes/.env"
+
+# ── Notion mesh config ──────────────────────────────────
+NOTION_DB = "39e2ea11-fbac-814b-a02c-c1d93644544a"
+BEACON_PORT = 9337
+BEACON_GROUP = "100.109.149.93"
+
+def load_notion_token():
+    """Load Notion token from ~/.hermes/.env"""
+    if ENV_PATH.exists():
+        with open(ENV_PATH) as f:
+            for line in f:
+                if line.startswith("NOTION_TOKEN=") and not line.startswith("#"):
+                    return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return None
+
+def query_tensor(query: str, limit: int = 5) -> list:
+    """Search Tensor 5 FTS5 for matching skills."""
+    db = sqlite3.connect(str(DB_PATH))
+    # Split into tokens, append * for prefix matching on multi-word queries
+    tokens = query.strip().split()
+    fts_query = " AND ".join(f"{t}*" for t in tokens) if tokens else query
+    
+    try:
+        rows = db.execute(
+            "SELECT name, path, number FROM skills_fts WHERE skills_fts MATCH ? LIMIT ?",
+            (fts_query, limit)
+        ).fetchall()
+    except sqlite3.OperationalError:
+        # FTS5 syntax error — fall back to single token LIKE
+        rows = db.execute(
+            "SELECT name, path, number FROM skills WHERE name LIKE ? LIMIT ?",
+            (f"%{query.split()[0]}%", limit)
+        ).fetchall()
+    db.close()
+    return [{"name": r[0], "path": r[1], "number": r[2]} for r in rows]
+
+def rebuild_index():
+    """Rebuild Tensor 5 from tensor5.json."""
+    with open(JSON_PATH) as f:
+        data = json.load(f)
+    entries = data["entries"]
+    
+    db = sqlite3.connect(str(DB_PATH))
+    db.execute("DROP TABLE IF EXISTS skills")
+    db.execute("DROP TABLE IF EXISTS skills_fts")
+    db.execute("""CREATE TABLE skills (
+        id INTEGER PRIMARY KEY, number TEXT, name TEXT,
+        source TEXT, range TEXT, path TEXT, hash TEXT)""")
+    db.execute("CREATE VIRTUAL TABLE skills_fts USING fts5(name, content='skills', content_rowid='id')")
+    db.execute("""CREATE TRIGGER skills_ai AFTER INSERT ON skills BEGIN
+        INSERT INTO skills_fts(rowid, name) VALUES (new.id, new.name); END""")
+    
+    for i, e in enumerate(entries, 1):
+        db.execute(
+            "INSERT INTO skills (id,number,name,source,range,path,hash) VALUES (?,?,?,?,?,?,?)",
+            (i, e["number"], e["name"], e["source"], e["range"], e["path"], e["hash"]))
+    db.commit()
+    count = db.execute("SELECT COUNT(*) FROM skills").fetchone()[0]
+    db.close()
+    return count
+
+def encode_phi(text: str) -> str:
+    """Encode natural language to φ-lang v4 codes."""
+    sys.path.insert(0, str(PHI_CODEC_PATH))
+    from phi_codec_v4 import Codec
+    return Codec().encode(text)
+
+def post_to_bus(results: list, query: str):
+    """Post query + top result to Notion Cloud Nodes Chat as φ-code."""
+    token = load_notion_token()
+    if not token:
+        print("[t5] no Notion token — skipping bus post")
+        return False
+    
+    if not results:
+        phi_msg = f"t5:0,query={encode_phi(query)}"
+    else:
+        top = results[0]
+        phi_msg = f"t5:1,query={encode_phi(query)},top={top['name']}"
+    
+    payload = json.dumps({
+        "parent": {"database_id": NOTION_DB},
+        "properties": {
+            "Message": {"title": [{"text": {"content": f"t5 query: {query[:60]}"}}]},
+            "Node": {"select": {"name": "jarvis"}},
+            "Type": {"select": {"name": "tensor"}},
+            "Status": {"select": {"name": "Done"}}
+        },
+        "children": [{"object": "block", "type": "paragraph",
+            "paragraph": {"rich_text": [{"type": "text", "text": {"content": phi_msg}}]}}]
+    }).encode()
+    
+    req = urllib.request.Request(
+        f"https://api.notion.com/v1/pages",
+        data=payload,
+        headers={"Authorization": f"Bearer {token}", "Notion-Version": "2025-09-03", "Content-Type": "application/json"}
+    )
+    try:
+        resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        print(f"[t5] posted to bus: {resp['id'][:8]}...")
+        return True
+    except Exception as e:
+        print(f"[t5] bus post error: {e}")
+        return False
+
+def send_beacon(query: str):
+    """Broadcast a φ-beacon: t5 query happened."""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        beacon = f"t5q:{encode_phi(query)[:40]}"
+        sock.sendto(beacon.encode(), (BEACON_GROUP, BEACON_PORT))
+        sock.close()
+        print(f"[t5] beacon sent: {beacon}")
+    except Exception as e:
+        print(f"[t5] beacon error: {e}")
+
+def install():
+    """Symlink t5 to /usr/local/bin for global access."""
+    src = Path(__file__).resolve()
+    dst = Path("/usr/local/bin/t5")
+    os.chmod(src, 0o755)
+    print(f"Run: sudo ln -sf {src} {dst}")
+    print(f"Or copy: sudo cp {src} {dst} && chmod +x {dst}")
+
+def main():
+    import argparse
+    p = argparse.ArgumentParser(description="t5 — Tensor 5 query tool")
+    p.add_argument("query", nargs="?", help="Search query")
+    p.add_argument("--mesh", action="store_true", help="Post results to mesh bus + send beacon")
+    p.add_argument("--rebuild", action="store_true", help="Rebuild Tensor 5 from φ-vault")
+    p.add_argument("--install", action="store_true", help="Install symlink to /usr/local/bin")
+    p.add_argument("--limit", type=int, default=5, help="Max results (default 5)")
+    args = p.parse_args()
+    
+    if args.install:
+        install()
+        return
+    
+    if args.rebuild:
+        count = rebuild_index()
+        print(f"t5: rebuilt Tensor 5 with {count} skills")
+        return
+    
+    if not args.query:
+        p.print_help()
+        return
+    
+    print(f"t5: \"{args.query}\"")
+    results = query_tensor(args.query, args.limit)
+    
+    if not results:
+        print("  (no matches)")
+    else:
+        for i, r in enumerate(results):
+            print(f"  {i+1}. {r['name']} ({r['path'][:60]})")
+    
+    if args.mesh:
+        post_to_bus(results, args.query)
+        send_beacon(args.query)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,153 @@
+# φ-Dict v2 — Full Communication Expansion
+# Adds 130 new words for agent↔agent reasoning, deployment, and workflow
+# Format: compatible with phi_codec.py (same INI-style parser)
+
+[DICTIONARY]
+
+# ===== EXISTING v1 CODES (unchanged) =====
+
+# Nodes (a0-a9)
+a0=Oracle
+a1=Jarvis
+a2=GCP
+a3=Shiv
+
+# ===== NEW v2 CODES =====
+
+# Build/Deploy (r0-r9)
+r0=build
+r1=test
+r2=push
+r3=pull
+r4=merge
+r5=branch
+r6=commit
+r7=rollback
+r8=release
+r9=restart
+
+# Quality/State (s0-s9)
+s0=pass
+s1=fail
+s2=warn
+s3=info
+s4=debug
+s5=error
+s6=critical
+s7=stable
+s8=unstable
+s9=partial
+
+# Data Operations (t0-t9)
+t0=create
+t1=update
+t2=delete
+t3=read
+t4=write
+t5=backup
+t6=restore
+t7=export
+t8=import
+t9=migrate
+
+# Review/Approval (u0-u9)
+u0=approve
+u1=reject
+u2=review
+u3=comment
+u4=assign
+u5=close
+u6=reopen
+u7=block
+u8=unblock
+u9=escalate
+
+# Communication (v0-v9)
+v0=broadcast
+v1=direct
+v2=propose
+v3=confirm
+v4=deny
+v5=notify
+v6=alert
+v7=remind
+v8=report
+v9=summarize
+
+# System Changes (w0-w9)
+w0=install
+w1=upgrade
+w2=downgrade
+w3=patch
+w4=configure
+w5=enable
+w6=disable
+w7=start
+w8=stop
+w9=reload
+
+# Reasoning (x0-x9)
+x0=analyze
+x1=decide
+x2=reason
+x3=explain
+x4=clarify
+x5=question
+x6=suggest
+x7=recommend
+x8=predict
+x9=evaluate
+
+# Comparison (y0-y9)
+y0=better
+y1=worse
+y2=same
+y3=different
+y4=increase
+y5=decrease
+y6=above
+y7=below
+
+# Priority (z0-z9)
+z0=urgent
+z1=high
+z2=medium
+z3=low
+z4=optional
+z5=blocker
+z6=quick
+z7=background
+z8=scheduled
+z9=immediate
+
+# ===== EXTENDED EXISTING RANGES (fill unused slots) =====
+
+# Communication extensions (m7-m9)
+m7=subscribe
+m8=publish
+m9=stream
+
+# Status extensions (n7-n9)
+n7=ready
+n8=waiting
+n9=timeout
+
+# Identifier extensions (i6-i9)
+i6=version
+i7=hash
+i8=url
+i9=path
+
+# Metric extensions (j6-j9)
+j6=throughput
+j7=latency
+j8=bandwidth
+j9=iops
+
+# Location extensions (l4-l9)
+l4=edge
+l5=local
+l6=remote
+l7=anywhere
+l8=home
+l9=roaming

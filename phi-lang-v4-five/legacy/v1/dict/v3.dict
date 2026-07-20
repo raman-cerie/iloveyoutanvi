@@ -1,0 +1,271 @@
+# φ-Dict v2 — Merged Dictionary (v1 + v2)
+# 190 words, a0-z9 ranges
+
+[DICTIONARY]
+
+# Actions (c0-c9)
+# Build/Deploy (r0-r9)
+# Communication (m0-m9)
+# Communication (v0-v9)
+# Communication extensions (m7-m9)
+# Comparison (y0-y9)
+# Config (d0-d9)
+# Data Operations (t0-t9)
+# Directions (o0-o9)
+# Health/Status (b0-b9)
+# Identifier extensions (i6-i9)
+# Identifiers (i0-i9)
+# Keys (e0-e9)
+# Location extensions (l4-l9)
+# Locations (l0-l9)
+# Metric extensions (j6-j9)
+# Metrics (j0-j9)
+# Nodes (a0-a9)
+# Priority (z0-z9)
+# Progressive: new words get next code in their category range
+# Protocol (k0-k9)
+# Quality/State (s0-s9)
+# Range: a0-z9 = 1,296 codes (36×36)
+# Reasoning (x0-x9)
+# Review/Approval (u0-u9)
+# Services (f0-f9)
+# Status (n0-n9)
+# Status extensions (n7-n9)
+# System Changes (w0-w9)
+# Time (h0-h9)
+# Work/Tasks (g0-g9)
+# φ-Dict v1.0 — φ-Codec Word Dictionary
+# φ-codec common field keys (q0-q9)
+# φ-codec single-char field keys (p0-p9)
+a0=Oracle
+a1=Jarvis
+a2=GCP
+a3=Shiv
+a4=SubHermes
+a5=Hermes
+b0=health
+b1=status
+b2=good
+b3=load
+b4=uptime
+b5=memory
+b6=gateway
+b7=alive
+b8=error
+b9=fail
+c0=ping
+c1=ack
+c2=exec
+c3=reply
+c4=deploy
+c5=adopt
+c6=verify
+c7=check
+c8=request
+c9=sync
+d0=config
+d1=runtime
+d2=telegram
+d3=deepseek
+d4=notion
+d5=ssh
+d6=api
+d7=token
+d8=provider
+d9=model
+e0=key
+e1=ssh_key
+e2=api_key
+e3=token_key
+e4=secret
+e5=credential
+e6=password
+f0=gateway
+f1=mesh
+f2=notion
+f3=cloud_chat
+f4=orchestrator
+f5=bridge
+f6=sensor
+f7=dashboard
+f8=watcher
+g0=work
+g1=task
+g2=done
+g3=todo
+g4=pending
+g5=blocked
+g6=completed
+g7=running
+h0=time
+h1=now
+h2=daily
+h3=hourly
+h4=timestamp
+h5=schedule
+i0=id
+i1=name
+i2=host
+i3=user
+i4=node_id
+i5=session_id
+i6=version
+i7=hash
+i8=url
+i9=path
+j0=cpu
+j1=disk
+j2=network
+j3=load_avg
+j4=ram_used
+j5=ram_total
+j6=throughput
+j7=latency
+j8=bandwidth
+j9=iops
+k0=phi_codec
+k1=phi_dict
+k2=tensor5
+k3=protocol
+k4=standard
+k5=default
+l0=OCI_uk-london
+l1=GCP_us-central1
+l2=macOS_local
+l3=cloud
+l4=edge
+l5=local
+l6=remote
+l7=anywhere
+l8=home
+l9=roaming
+m0=child_block
+m1=thread
+m2=append
+m3=read
+m4=write
+m5=poll
+m6=respond
+m7=subscribe
+m8=publish
+m9=stream
+n0=online
+n1=offline
+n2=degraded
+n3=unknown
+n4=locked
+n5=active
+n6=inactive
+n7=ready
+n8=waiting
+n9=timeout
+o0=inbound
+o1=outbound
+o2=bidirectional
+o3=read_only
+o4=read_write
+p0=n   # node shortcut
+p1=h   # host shortcut
+p2=u   # user shortcut
+p3=m   # model shortcut
+p4=s   # services shortcut
+p5=e   # error shortcut
+p6=r   # reason shortcut
+q0=ip
+q1=st  # status
+q2=up  # uptime
+q3=ld  # load
+q4=gw  # gateway
+q5=pk  # public_key
+q6=ak  # api_key
+q7=tg  # telegram
+q8=nt  # notion
+q9=mem # memory
+r0=build
+r1=test
+r2=push
+r3=pull
+r4=merge
+r5=branch
+r6=commit
+r7=rollback
+r8=release
+r9=restart
+s0=pass
+s1=fail
+s2=warn
+s3=info
+s4=debug
+s5=error
+s6=critical
+s7=stable
+s8=unstable
+s9=partial
+t0=create
+t1=update
+t2=delete
+t3=read
+t4=write
+t5=backup
+t6=restore
+t7=export
+t8=import
+t9=migrate
+u0=approve
+u1=reject
+u2=review
+u3=comment
+u4=assign
+u5=close
+u6=reopen
+u7=block
+u8=unblock
+u9=escalate
+v0=broadcast
+v1=direct
+v2=propose
+v3=confirm
+v4=deny
+v5=notify
+v6=alert
+v7=remind
+v8=report
+v9=summarize
+w0=install
+w1=upgrade
+w2=downgrade
+w3=patch
+w4=configure
+w5=enable
+w6=disable
+w7=start
+w8=stop
+w9=reload
+x0=analyze
+x1=decide
+x2=reason
+x3=explain
+x4=clarify
+x5=question
+x6=suggest
+x7=recommend
+x8=predict
+x9=evaluate
+y0=better
+y1=worse
+y2=same
+y3=different
+y4=increase
+y5=decrease
+y6=above
+y7=below
+z0=urgent
+z1=high
+z2=medium
+z3=low
+z4=optional
+z5=blocker
+z6=quick
+z7=background
+z8=scheduled
+z9=immediate
